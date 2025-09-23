@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
 from pydantic import BaseModel, EmailStr
 
@@ -29,6 +29,7 @@ class BulkEmployeeResponse(BaseModel):
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
+    role: Optional[str] = "user"    
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -37,4 +38,3 @@ class UserLogin(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
