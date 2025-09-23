@@ -7,7 +7,7 @@ from database.models import EmployeeCreate, EmployeeResponse, BulkEmployeeRespon
 from datetime import datetime
 from typing import List
 from fastapi import File, UploadFile, Depends, HTTPException
-from auth import users_collection, verify_password, create_access_token, get_current_user
+from auth import hash_password, users_collection, verify_password, create_access_token, get_current_user
 import os
 app = FastAPI()
 router = APIRouter(prefix="/employees", tags=["Employees"])
@@ -128,7 +128,21 @@ def login(user: UserLogin):
 
 @router.get("/users/me")
 def read_users_me(current_user=Depends(get_current_user)):
-    return {"email": current_user["email"]}
+    return {"email": current_user["email"], "role": current_user["role"]}
 
+@router.post("/auth/create-user")
+def create_user(user: UserRegister, current_user=Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can create users")
+
+    if users_collection.find_one({"email": user.email}):
+        raise HTTPException(status_code=400, detail="Email already exists")
+
+    users_collection.insert_one({
+        "email": user.email,
+        "password": hash_password(user.password),
+        "role": "user"
+    })
+    return {"msg": "User created successfully"}
 
 app.include_router(router)
