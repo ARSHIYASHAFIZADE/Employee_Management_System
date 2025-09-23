@@ -18,6 +18,16 @@ ACCESS_TOKEN_EXPIRES_IN = int(os.getenv("ACCESS_TOKEN_EXPIRES_IN", 15))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+admin_email = os.getenv("ADMIN_EMAIL", "admin@example.com")
+admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+
+if not users_collection.find_one({"email": admin_email}):
+    users_collection.insert_one({
+        "email": admin_email,
+        "password": pwd_context.hash(admin_password),
+        "role": "admin"
+    })
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def hash_password(password: str) -> str:
